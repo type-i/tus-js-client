@@ -52,7 +52,7 @@ if (!BS_USERNAME || BS_USERNAME == "" || !BS_KEY || BS_KEY == "") {
   process.exit(1);
 }
 
-function runTests(cb) {
+function runTests(cb, isRetry) {
   browserstack.run({
     username: BS_USERNAME,
     key: BS_KEY,
@@ -69,6 +69,16 @@ function runTests(cb) {
     // console.log(JSON.stringify(reports, null, 2));
     console.log("Test Finished");
     console.log("");
+
+    if (!Array.isArray(reports) && !isRetry) {
+      console.log("");
+      console.log("Attention! BrowserStack did not return all reports. This happens when one test times out. Instead we got:");
+      console.log(reports);
+      console.log("Restarting tests...");
+      console.log("");
+      runTests(cb, true);
+      return;
+    }
 
     reports.forEach((report) => {
       const testCount = report.suites.testCounts.total;

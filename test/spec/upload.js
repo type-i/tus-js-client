@@ -1267,6 +1267,11 @@ describe("tus", function () {
   });
 
   it("should upload to a real tus server", function (done) {
+    let startTime = Date.now();
+    let log = function (msg) {
+      let delay = Date.now() - startTime;
+      console.log("" + delay + "ms: " + msg);
+    };
     var file = getBlob("hello world");
     var options = {
       resume: false,
@@ -1278,10 +1283,12 @@ describe("tus", function () {
         filetype: "text/plain"
       },
       onSuccess: function () {
+        log("onSuccess called");
         expect(upload.url).toMatch(/^https:\/\/master\.tus\.io\/files\//);
         console.log("Upload URL:", upload.url); // eslint-disable-line no-console
 
         validateUploadContent(upload, function (err) {
+          log("validateUploadContent done: " + err);
           if (err) {
             done.fail(err);
             return;
@@ -1289,25 +1296,36 @@ describe("tus", function () {
 
           // delete the upload after it was completed
           upload.abort(true, function (err) {
+            log("abort done: " + err);
             if (err) {
               done.fail(err);
               return;
             }
 
-            validateUploadDeletion(upload, done);
+            validateUploadDeletion(upload, function (err) {
+              log("validateUploadDeletion done: " + err);
+              done(err);
+            });
           });
         });
       },
       onError: function (err) {
+        log("onError called");
         done.fail(err);
       }
     };
 
     var upload = new tus.Upload(file, options);
     upload.start();
+    log("starting upload");
   });
 
   it("should upload to a real tus server with creation-with-upload", function (done) {
+    let startTime = Date.now();
+    let log = function (msg) {
+      let delay = Date.now() - startTime;
+      console.log("" + delay + "ms: " + msg);
+    };
     var file = getBlob("hello world");
     var options = {
       resume: false,
@@ -1320,18 +1338,24 @@ describe("tus", function () {
         filetype: "text/plain"
       },
       onSuccess: function () {
+        log("onSuccess called");
         expect(upload.url).toMatch(/^https:\/\/master\.tus\.io\/files\//);
         console.log("Upload URL:", upload.url); // eslint-disable-line no-console
 
-        validateUploadContent(upload, done);
+        validateUploadContent(upload, function (err) {
+          log("validateUploadDeletion done: " + err);
+          done(err);
+        });
       },
       onError: function (err) {
+        log("onError called");
         done.fail(err);
       }
     };
 
     var upload = new tus.Upload(file, options);
     upload.start();
+    log("upload start");
   });
 });
 

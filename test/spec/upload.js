@@ -1304,7 +1304,12 @@ describe("tus", function () {
 
             validateUploadDeletion(upload, function (err) {
               log("validateUploadDeletion done: " + err);
-              done(err);
+              if (err) {
+                done.fail(err);
+                return;
+              }
+
+              done();
             });
           });
         });
@@ -1343,8 +1348,13 @@ describe("tus", function () {
         console.log("Upload URL:", upload.url); // eslint-disable-line no-console
 
         validateUploadContent(upload, function (err) {
-          log("validateUploadDeletion done: " + err);
-          done(err);
+          log("validateUploadContent done: " + err);
+          if (err) {
+            done.fail(err);
+            return;
+          }
+
+          done();
         });
       },
       onError: function (err) {
@@ -1400,7 +1410,7 @@ function validateUploadMetadata(upload, cb) {
     .catch(cb);
 }
 
-function validateUploadDeletion(upload, done) {
+function validateUploadDeletion(upload, cb) {
   var validateStatus = function (status) {
     return status === 404;
   };
@@ -1408,9 +1418,9 @@ function validateUploadDeletion(upload, done) {
   axios.get(upload.url, { validateStatus: validateStatus })
     .then(function (res) {
       expect(res.status).toBe(404);
-      done();
+      cb();
     })
-    .catch(done.fail);
+    .catch(cb);
 }
 
 function waitTillNextReq(id, req, cb, level) {
